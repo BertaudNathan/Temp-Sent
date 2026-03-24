@@ -1,0 +1,31 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: temp-sent-mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./docker/mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./docker/mosquitto/data:/mosquitto/data
+      - ./docker/mosquitto/log:/mosquitto/log
+
+  mqtt-rest-bridge:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: temp-sent-mqtt-rest
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+    environment:
+      MQTT_URL: ${MQTT_URL:-mqtt://mosquitto:1883}
+      MQTT_USERNAME: ${MQTT_USERNAME:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+      MQTT_CLIENT_ID: ${MQTT_CLIENT_ID:-mqtt-rest-bridge}
+      MQTT_TELEMETRY_TOPICS: ${MQTT_TELEMETRY_TOPICS:-iot/sensors/+/telemetry}
+      MQTT_KPI_TOPICS: ${MQTT_KPI_TOPICS:-iot/sensors/+/info,iot/sensors/+/errors,iot/actuators/+/status}
+      REST_BASE_URL: ${REST_BASE_URL:-https://your-backend.vercel.app}
+      REST_TELEMETRY_PATH: ${REST_TELEMETRY_PATH:-/api/iot/telemetry}
+      REST_KPI_PATH: ${REST_KPI_PATH:-/api/iot/kpi}
+      REST_AUTH_TOKEN: ${REST_AUTH_TOKEN:-}

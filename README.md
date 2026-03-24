@@ -136,6 +136,38 @@ Relever l'**adresse IP** du Raspberry Pi (nécessaire pour `config.h`) :
 hostname -I
 ```
 
+### Alternative Docker (Mosquitto + bridge REST)
+
+Le dépôt contient une stack Docker prête à l'emploi :
+- `mosquitto` (broker MQTT)
+- `mqtt-rest-bridge` (service Node.js qui écoute MQTT et pousse vers un backend REST)
+
+Étapes :
+
+```bash
+# Depuis la racine du projet
+cd Raspberry
+
+# 1) Copier la config d'environnement
+cp .env.example .env
+
+# 2) Renseigner l'URL de ton backend Vercel dans .env
+# REST_BASE_URL=https://xxx.vercel.app
+
+# 3) Lancer les conteneurs
+docker compose up -d --build
+```
+
+Topics écoutés par défaut :
+- `iot/sensors/+/telemetry` -> `POST ${REST_BASE_URL}${REST_TELEMETRY_PATH}`
+- `iot/sensors/+/info`, `iot/sensors/+/errors`, `iot/actuators/+/status` -> `POST ${REST_BASE_URL}${REST_KPI_PATH}`
+
+Pour suivre les logs :
+
+```bash
+docker compose logs -f mqtt-rest-bridge
+```
+
 ---
 
 ## Installation du projet
