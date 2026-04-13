@@ -63,6 +63,16 @@ async function postJson(url, body) {
     if (err?.name === "AbortError") {
       throw new Error(`Timeout HTTP apres ${HTTP_TIMEOUT_MS}ms vers ${url}`);
     }
+
+    const cause = err?.cause;
+    const causeCode = cause?.code ? String(cause.code) : "";
+    const causeMessage = cause?.message ? String(cause.message) : "";
+    const details = [causeCode, causeMessage].filter(Boolean).join(" ").trim();
+
+    if (err?.message === "fetch failed") {
+      throw new Error(`Fetch failed vers ${url}${details ? ` - ${details}` : ""}`);
+    }
+
     throw err;
   } finally {
     clearTimeout(timeout);
