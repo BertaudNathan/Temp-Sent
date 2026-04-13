@@ -1,11 +1,11 @@
 #pragma once
 // Réseau WiFi
-#define WIFI_SSID              "SamsungA52s"
-#define WIFI_PASS              "nathanleboss"
+#define WIFI_SSID              "motorola edge 60_1041"
+#define WIFI_PASS              "ftgstpftg"
 #define WIFI_CONNECT_TIMEOUT_MS 15000   // Délai max de connexion initiale (ms)
 
 // Broker MQTT (Raspberry Pi Mosquitto)
-#define MQTT_HOST              "192.168.175.45"
+#define MQTT_HOST              "192.168.220.124"
 #define MQTT_PORT              1883
 #define MQTT_USER              ""           // Laisser vide si non requis
 #define MQTT_PASS              ""           // Laisser vide si non requis

@@ -1,10 +1,12 @@
 import process from "node:process";
+import fs from "node:fs";
 import mqtt from "mqtt";
+import admin from "firebase-admin";
 
 const MQTT_URL = process.env.MQTT_URL || "mqtt://mosquitto:1883";
 const MQTT_USERNAME = process.env.MQTT_USERNAME || "";
 const MQTT_PASSWORD = process.env.MQTT_PASSWORD || "";
-const MQTT_CLIENT_ID = process.env.MQTT_CLIENT_ID || `mqtt-rest-bridge-${Math.random().toString(16).slice(2, 8)}`;
+const MQTT_CLIENT_ID = process.env.MQTT_CLIENT_ID || `mqtt-firebase-bridge-${Math.random().toString(16).slice(2, 8)}`;
 
 const TELEMETRY_TOPICS = (process.env.MQTT_TELEMETRY_TOPICS || "iot/sensors/+/telemetry")
   .split(",")
@@ -16,10 +18,34 @@ const KPI_TOPICS = (process.env.MQTT_KPI_TOPICS || "iot/sensors/+/info,iot/senso
   .map((t) => t.trim())
   .filter(Boolean);
 
-const REST_BASE_URL = process.env.REST_BASE_URL || "https://your-backend.vercel.app";
-const REST_TELEMETRY_PATH = process.env.REST_TELEMETRY_PATH || "/api/iot/telemetry";
-const REST_KPI_PATH = process.env.REST_KPI_PATH || "/api/iot/kpi";
-const REST_AUTH_TOKEN = process.env.REST_AUTH_TOKEN || "";
+const FIREBASE_DATABASE_URL = process.env.FIREBASE_DATABASE_URL || "";
+const FIREBASE_SERVICE_ACCOUNT_PATH = process.env.FIREBASE_SERVICE_ACCOUNT_PATH || "/run/secrets/firebase-service-account.json";
+const FIREBASE_TELEMETRY_PATH = process.env.FIREBASE_TELEMETRY_PATH || "/iot/telemetry";
+const FIREBASE_HARDWARE_PATH = process.env.FIREBASE_HARDWARE_PATH || "/iot/hardware";
+
+function normalizeDbPath(path) {
+  if (!path) {
+    return "/";
+  }
+
+  return path.startsWith("/") ? path : `/${path}`;
+}
+
+function initFirebaseDatabase() {
+  if (!fs.existsSync(FIREBASE_SERVICE_ACCOUNT_PATH)) {
+    throw new Error(`FIREBASE_SERVICE_ACCOUNT_PATH introuvable: ${FIREBASE_SERVICE_ACCOUNT_PATH}`);
+  }
+
+  const serviceAccountRaw = fs.readFileSync(FIREBASE_SERVICE_ACCOUNT_PATH, "utf8");
+  const serviceAccount = JSON.parse(serviceAccountRaw);
+
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: FIREBASE_DATABASE_URL,
+  });
+
+  return admin.database();
+}
 
 function parseJsonPayload(payloadBuffer) {
   const payloadText = payloadBuffer.toString("utf8");
@@ -79,41 +105,18 @@ function isTelemetryTopic(topic) {
   return TELEMETRY_TOPICS.some((pattern) => topicMatchesPattern(topic, pattern));
 }
 
-function buildHeaders() {
-  const headers = {
-    "Content-Type": "application/json",
-  };
-
-  if (REST_AUTH_TOKEN) {
-    headers.Authorization = `Bearer ${REST_AUTH_TOKEN}`;
-  }
-
-  return headers;
-}
-
 function withServerTimestamp(payload) {
   return {
     ...payload,
-    timestamp_server: new Date().toISOString(),
+    timestamp_server: admin.database.ServerValue.TIMESTAMP,
   };
 }
 
-async function postToBackend(path, payload) {
-  const url = new URL(path, REST_BASE_URL).toString();
-  const response = await fetch(url, {
-    method: "POST",
-    headers: buildHeaders(),
-    body: JSON.stringify(withServerTimestamp(payload)),
-  });
-
-  if (!response.ok) {
-    const responseBody = await response.text();
-    throw new Error(`HTTP ${response.status} ${response.statusText} - ${responseBody}`);
-  }
+async function pushToRealtimeDb(db, path, payload) {
+  await db.ref(normalizeDbPath(path)).push(withServerTimestamp(payload));
 }
 
-// Envoie les données de télémétrie vers le backend REST (temperature/humidity)
-async function sendTelemetryData(topic, message) {
+async function sendTelemetryData(db, topic, message) {
   const data = {
     topic,
     device_id: extractDeviceId(topic, message.device_id),
@@ -123,11 +126,10 @@ async function sendTelemetryData(topic, message) {
     raw: message,
   };
 
-  await postToBackend(REST_TELEMETRY_PATH, data);
+  await pushToRealtimeDb(db, FIREBASE_TELEMETRY_PATH, data);
 }
 
-// Envoie les donnees KPI vers le backend REST (info/errors/status)
-async function sendHardwareKPI(topic, message) {
+async function sendHardwareKPI(db, topic, message) {
   const data = {
     topic,
     device_id: extractDeviceId(topic, message.device_id),
@@ -136,10 +138,12 @@ async function sendHardwareKPI(topic, message) {
     raw: message,
   };
 
-  await postToBackend(REST_KPI_PATH, data);
+  await pushToRealtimeDb(db, FIREBASE_HARDWARE_PATH, data);
 }
 
 function main() {
+  const db = initFirebaseDatabase();
+
   const client = mqtt.connect(MQTT_URL, {
     username: MQTT_USERNAME || undefined,
     password: MQTT_PASSWORD || undefined,
@@ -177,15 +181,15 @@ function main() {
 
     try {
       if (isTelemetryTopic(topic)) {
-        await sendTelemetryData(topic, parsed.data);
-        console.log(`[REST] Telemetry envoyee: ${topic}`);
+        await sendTelemetryData(db, topic, parsed.data);
+        console.log(`[Firebase RTDB] Telemetry envoyee: ${topic}`);
         return;
       }
 
-      await sendHardwareKPI(topic, parsed.data);
-      console.log(`[REST] KPI envoye: ${topic}`);
+      await sendHardwareKPI(db, topic, parsed.data);
+      console.log(`[Firebase RTDB] Hardware envoye: ${topic}`);
     } catch (err) {
-      console.error(`[REST] Erreur envoi (${topic}):`, err.message);
+      console.error(`[Firebase RTDB] Erreur envoi (${topic}):`, err.message);
     }
   });
 }

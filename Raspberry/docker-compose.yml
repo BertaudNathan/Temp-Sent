@@ -10,11 +10,11 @@ services:
       - ./docker/mosquitto/data:/mosquitto/data
       - ./docker/mosquitto/log:/mosquitto/log
 
-  mqtt-rest-bridge:
+  mqtt-firebase-bridge:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: temp-sent-mqtt-rest
+    container_name: temp-sent-mqtt-firebase
     restart: unless-stopped
     depends_on:
       - mosquitto
@@ -22,10 +22,12 @@ services:
       MQTT_URL: ${MQTT_URL:-mqtt://mosquitto:1883}
       MQTT_USERNAME: ${MQTT_USERNAME:-}
       MQTT_PASSWORD: ${MQTT_PASSWORD:-}
-      MQTT_CLIENT_ID: ${MQTT_CLIENT_ID:-mqtt-rest-bridge}
+      MQTT_CLIENT_ID: ${MQTT_CLIENT_ID:-mqtt-firebase-bridge}
       MQTT_TELEMETRY_TOPICS: ${MQTT_TELEMETRY_TOPICS:-iot/sensors/+/telemetry}
       MQTT_KPI_TOPICS: ${MQTT_KPI_TOPICS:-iot/sensors/+/info,iot/sensors/+/errors,iot/actuators/+/status}
-      REST_BASE_URL: ${REST_BASE_URL:-https://your-backend.vercel.app}
-      REST_TELEMETRY_PATH: ${REST_TELEMETRY_PATH:-/api/iot/telemetry}
-      REST_KPI_PATH: ${REST_KPI_PATH:-/api/iot/kpi}
-      REST_AUTH_TOKEN: ${REST_AUTH_TOKEN:-}
+      FIREBASE_DATABASE_URL: ${FIREBASE_DATABASE_URL}
+      FIREBASE_SERVICE_ACCOUNT_PATH: /run/secrets/firebase-service-account.json
+      FIREBASE_TELEMETRY_PATH: ${FIREBASE_TELEMETRY_PATH:-/iot/telemetry}
+      FIREBASE_HARDWARE_PATH: ${FIREBASE_HARDWARE_PATH:-/iot/hardware}
+    volumes:
+      - ${FIREBASE_SERVICE_ACCOUNT_FILE:-./firebase-service-account.json}:/run/secrets/firebase-service-account.json:ro

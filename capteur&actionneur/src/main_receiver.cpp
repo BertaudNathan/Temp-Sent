@@ -135,6 +135,9 @@ void setup() {
     device_init(); // ID dérivé de la MAC — doit être premier
     Serial.printf("\n[Boot] Récepteur v%s — device: %s\n",
                   FIRMWARE_VERSION, device_id_get());
+    Serial.printf("[Boot] Topic commande: %s\n", device_topic_command());
+    Serial.printf("[Boot] Topic statut  : %s\n", device_topic_status());
+    Serial.printf("[Boot] PIN_MOTOR_PWM : %d\n", PIN_MOTOR_PWM);
 
     led_init();
     actuator_init();
