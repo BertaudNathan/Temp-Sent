@@ -26,7 +26,7 @@ const KPI_TOPICS = (process.env.MQTT_KPI_TOPICS || "iot/sensors/+/info,iot/senso
 function normalizeBaseUrl(baseUrlRaw) {
   const raw = String(baseUrlRaw || "").trim();
   if (!raw) {
-    throw new Error("REST_BASE_URL manquant (ex: http://192.168.1.20:3000)");
+    throw new Error("REST_BASE_URL manquant (ex: http://192.168.1.20:8080)");
   }
 
   const withScheme = raw.startsWith("http://") || raw.startsWith("https://") ? raw : `http://${raw}`;
@@ -59,6 +59,11 @@ async function postJson(url, body) {
     }
 
     return true;
+  } catch (err) {
+    if (err?.name === "AbortError") {
+      throw new Error(`Timeout HTTP apres ${HTTP_TIMEOUT_MS}ms vers ${url}`);
+    }
+    throw err;
   } finally {
     clearTimeout(timeout);
   }
