@@ -9,6 +9,10 @@ services:
       - ./docker/mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - ./docker/mosquitto/data:/mosquitto/data
       - ./docker/mosquitto/log:/mosquitto/log
+    networks:
+      iotnet:
+        aliases:
+          - mosquitto
 
   mqtt-firebase-bridge:
     build:
@@ -31,3 +35,9 @@ services:
       FIREBASE_HARDWARE_PATH: ${FIREBASE_HARDWARE_PATH:-/iot/hardware}
     volumes:
       - ${FIREBASE_SERVICE_ACCOUNT_FILE:-./firebase-service-account.json}:/run/secrets/firebase-service-account.json:ro
+    networks:
+      - iotnet
+
+networks:
+  iotnet:
+    name: temp-sent-iotnet
