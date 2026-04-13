@@ -151,8 +151,8 @@ cd Raspberry
 # 1) Copier la config d'environnement
 cp .env.example .env
 
-# 2) Renseigner l'URL de ton backend Vercel dans .env
-# REST_BASE_URL=https://xxx.vercel.app
+# 2) Renseigner l'URL de ton backend (IP locale ou URL publique) dans .env
+# REST_BASE_URL=http://192.168.1.20:3000
 
 # 3) Lancer les conteneurs
 docker compose up -d --build

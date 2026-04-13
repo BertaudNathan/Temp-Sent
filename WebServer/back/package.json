@@ -1,0 +1,18 @@
+{
+  "name": "temp-sent-back",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "firebase-admin": "^13.5.0",
+    "mysql2": "^3.14.2",
+    "node-cron": "^3.0.3"
+  }
+}

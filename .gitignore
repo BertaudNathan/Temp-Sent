@@ -1,5 +1,9 @@
 nodes_modules/
 */node_modules
+
+WebServer/back/node_modules/
+WebServer/back/key.json
+WebServer/front/node_modules/
 Raspberry/docker/
 Raspberry/temp-sent-firebase-adminsdk.json
 Raspberry/key.json

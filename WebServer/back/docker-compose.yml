@@ -1,0 +1,60 @@
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: temp-sent-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-tempsent}
+      MARIADB_USER: ${MARIADB_USER:-tempsent}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-tempsent}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-root}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: temp-sent-api
+    restart: unless-stopped
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      PORT: ${PORT:-3000}
+
+      # Firebase RTDB
+      FIREBASE_DATABASE_URL: ${FIREBASE_DATABASE_URL}
+      FIREBASE_SERVICE_ACCOUNT_PATH: /run/secrets/firebase-service-account.json
+      FIREBASE_TELEMETRY_PATH: ${FIREBASE_TELEMETRY_PATH:-/iot/telemetry}
+      FIREBASE_HARDWARE_PATH: ${FIREBASE_HARDWARE_PATH:-/iot/hardware}
+
+      # MariaDB
+      MARIADB_HOST: mariadb
+      MARIADB_PORT: 3306
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-tempsent}
+      MARIADB_USER: ${MARIADB_USER:-tempsent}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-tempsent}
+
+      # Archive job
+      ARCHIVE_CRON_ENABLED: ${ARCHIVE_CRON_ENABLED:-true}
+      ARCHIVE_CRON_SCHEDULE: ${ARCHIVE_CRON_SCHEDULE:-"5 0 * * *"}
+      ARCHIVE_OLDER_THAN_HOURS: ${ARCHIVE_OLDER_THAN_HOURS:-24}
+      ARCHIVE_PAGE_SIZE: ${ARCHIVE_PAGE_SIZE:-500}
+      ARCHIVE_DELETE_CHUNK_SIZE: ${ARCHIVE_DELETE_CHUNK_SIZE:-500}
+      TZ: ${TZ:-Europe/Paris}
+    volumes:
+      - ${FIREBASE_SERVICE_ACCOUNT_FILE:-../../Raspberry/key.json}:/run/secrets/firebase-service-account.json:ro
+    ports:
+      - "3000:3000"
+
+volumes:
+  mariadb_data:

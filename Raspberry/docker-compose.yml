@@ -14,11 +14,11 @@ services:
         aliases:
           - mosquitto
 
-  mqtt-firebase-bridge:
+  mqtt-rest-bridge:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: temp-sent-mqtt-firebase
+    container_name: temp-sent-mqtt-rest
     restart: unless-stopped
     depends_on:
       - mosquitto
@@ -29,12 +29,10 @@ services:
       MQTT_CLIENT_ID: ${MQTT_CLIENT_ID:-mqtt-firebase-bridge}
       MQTT_TELEMETRY_TOPICS: ${MQTT_TELEMETRY_TOPICS:-iot/sensors/+/telemetry}
       MQTT_KPI_TOPICS: ${MQTT_KPI_TOPICS:-iot/sensors/+/info,iot/sensors/+/errors,iot/actuators/+/status}
-      FIREBASE_DATABASE_URL: ${FIREBASE_DATABASE_URL}
-      FIREBASE_SERVICE_ACCOUNT_PATH: /run/secrets/firebase-service-account.json
-      FIREBASE_TELEMETRY_PATH: ${FIREBASE_TELEMETRY_PATH:-/iot/telemetry}
-      FIREBASE_HARDWARE_PATH: ${FIREBASE_HARDWARE_PATH:-/iot/hardware}
-    volumes:
-      - ${FIREBASE_SERVICE_ACCOUNT_FILE:-./firebase-service-account.json}:/run/secrets/firebase-service-account.json:ro
+      REST_BASE_URL: ${REST_BASE_URL}
+      REST_TELEMETRY_PATH: ${REST_TELEMETRY_PATH:-/api/v1/telemetry}
+      REST_KPI_PATH: ${REST_KPI_PATH:-/api/v1/hardware}
+      HTTP_TIMEOUT_MS: ${HTTP_TIMEOUT_MS:-5000}
     networks:
       - iotnet
 

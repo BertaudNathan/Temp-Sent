@@ -5,7 +5,7 @@
 #define WIFI_CONNECT_TIMEOUT_MS 15000   // Délai max de connexion initiale (ms)
 
 // Broker MQTT (Raspberry Pi Mosquitto)
-#define MQTT_HOST              "192.168.220.124"
+#define MQTT_HOST              "10.208.33.124"
 #define MQTT_PORT              1883
 #define MQTT_USER              ""           // Laisser vide si non requis
 #define MQTT_PASS              ""           // Laisser vide si non requis
