@@ -12,7 +12,7 @@ services:
       - "3306:3306"
     volumes:
       - mariadb_data:/var/lib/mysql
-      - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./back/db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 5s
@@ -21,7 +21,7 @@ services:
 
   api:
     build:
-      context: .
+      context: ./back
       dockerfile: Dockerfile
     container_name: temp-sent-api
     restart: unless-stopped
@@ -51,8 +51,13 @@ services:
       ARCHIVE_PAGE_SIZE: ${ARCHIVE_PAGE_SIZE:-500}
       ARCHIVE_DELETE_CHUNK_SIZE: ${ARCHIVE_DELETE_CHUNK_SIZE:-500}
       TZ: ${TZ:-Europe/Paris}
+
+      # Actions forwarding (API -> Raspberry control server)
+      RASPBERRY_CONTROL_BASE_URL: ${RASPBERRY_CONTROL_BASE_URL:-}
+      RASPBERRY_CONTROL_TIMEOUT_MS: ${RASPBERRY_CONTROL_TIMEOUT_MS:-5000}
+
     volumes:
-      - ${FIREBASE_SERVICE_ACCOUNT_FILE:-../../Raspberry/key.json}:/run/secrets/firebase-service-account.json:ro
+      - ../Raspberry/key.json:/run/secrets/firebase-service-account.json:ro
     ports:
       - "${PORT:-3000}:${PORT:-3000}"
 
@@ -63,13 +68,10 @@ services:
     working_dir: /app
     depends_on:
       - api
-    env_file:
-      - ../.env
     environment:
-      # Force Vite to listen on all interfaces inside the container.
       HOST: 0.0.0.0
     volumes:
-      - ../front:/app
+      - ./front:/app
       - front_node_modules:/app/node_modules
     command: sh -lc "npm ci && npm run dev -- --host 0.0.0.0 --port 5173"
     ports:

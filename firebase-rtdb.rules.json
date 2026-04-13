@@ -1,0 +1,12 @@
+{
+  "rules": {
+    "iot": {
+      "telemetry": {
+        ".indexOn": ["timestamp_server"]
+      },
+      "hardware": {
+        ".indexOn": ["timestamp_server"]
+      }
+    }
+  }
+}

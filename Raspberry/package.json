@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "start:control": "node control_server.js",
     "archive": "node archive_rtdb_to_firestore.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -20,6 +21,7 @@
   },
   "homepage": "https://github.com/BertaudNathan/Temp-Sent#readme",
   "dependencies": {
+    "express": "^4.21.2",
     "firebase-admin": "^13.5.0",
     "mqtt": "^5.15.0"
   }

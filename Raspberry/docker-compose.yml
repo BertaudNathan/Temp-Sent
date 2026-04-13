@@ -36,6 +36,27 @@ services:
     networks:
       - iotnet
 
+  raspberry-control:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: temp-sent-raspberry-control
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+    environment:
+      CONTROL_PORT: ${CONTROL_PORT:-4000}
+      MQTT_URL: ${MQTT_URL:-mqtt://mosquitto:1883}
+      MQTT_USERNAME: ${MQTT_USERNAME:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+      MQTT_CLIENT_ID: ${MQTT_CONTROL_CLIENT_ID:-raspberry-control}
+      ACTUATOR_ON_SPEED_PCT: ${ACTUATOR_ON_SPEED_PCT:-100}
+    command: ["npm", "run", "start:control"]
+    ports:
+      - "${CONTROL_PORT:-4000}:${CONTROL_PORT:-4000}"
+    networks:
+      - iotnet
+
 networks:
   iotnet:
     name: temp-sent-iotnet

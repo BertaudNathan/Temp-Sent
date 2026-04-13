@@ -7,3 +7,7 @@ WebServer/front/node_modules/
 Raspberry/docker/
 Raspberry/temp-sent-firebase-adminsdk.json
 Raspberry/key.json
+WebServer/front/.env
+WebServer/back/.env
+WebServer/.env
+Raspberry/.env

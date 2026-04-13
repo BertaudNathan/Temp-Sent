@@ -4,12 +4,12 @@ API REST Node/Express.
 
 ## Run (Docker)
 
-Depuis `back/` :
+Depuis `WebServer/` :
 
-- Copier `.env.example` -> `.env` et remplir `FIREBASE_DATABASE_URL` + le chemin du service account.
-- Lancer :
+- Copier `.env.example` -> `.env` (au niveau `WebServer/.env`) et remplir `FIREBASE_DATABASE_URL` + le chemin du service account.
+- Lancer (depuis `WebServer/back`) :
 
-`docker compose --env-file .env up -d --build`
+`docker compose --env-file ../.env up -d --build`
 
 ## Endpoints
 
@@ -18,6 +18,21 @@ Depuis `back/` :
 
 - `GET /api/v1/telemetry?source=hot|cold|both&since=<ms|iso>&until=<ms|iso>&limit=<1..1000>`
 - `GET /api/v1/hardware?source=hot|cold|both&since=<ms|iso>&until=<ms|iso>&limit=<1..1000>`
+
+## Firebase RTDB: index requis
+
+L'API fait des requêtes `orderByChild("timestamp_server")` sur RTDB.
+Si Firebase renvoie:
+
+`Index not defined, add ".indexOn": "timestamp_server" ...`
+
+il faut ajouter l'index dans les règles RTDB.
+
+Template prêt à copier/coller: [firebase-rtdb.rules.json](../../firebase-rtdb.rules.json)
+
+Note: les chemins doivent correspondre à `FIREBASE_TELEMETRY_PATH` / `FIREBASE_HARDWARE_PATH`.
+
+Dans Firebase Console: Realtime Database → Rules → coller/merger puis Publish.
 
 ## Archivage (cron)
 

@@ -6,7 +6,9 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "dev": "node --watch src/server.js",
+    "compose:up": "docker compose --env-file ../.env up -d --build",
+    "compose:down": "docker compose down"
   },
   "dependencies": {
     "dotenv": "^16.6.1",

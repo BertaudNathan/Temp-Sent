@@ -8,9 +8,23 @@ import { createMariaPool } from "./mariadb.js";
 import { runArchiveOnce } from "./archiveJob.js";
 import { createIngestRouter } from "./routes/ingest.js";
 import { createDataRouter } from "./routes/data.js";
+import { createActuatorsRouter } from "./routes/actuators.js";
 
 async function main() {
   const app = express();
+
+  // Minimal CORS for browser front-end
+  app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", config.cors.origin);
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    if (req.method === "OPTIONS") {
+      res.status(204).end();
+      return;
+    }
+    next();
+  });
+
   app.use(express.json({ limit: "1mb" }));
 
   const { admin, db, normalizeDbPath } = initFirebase();
@@ -51,6 +65,8 @@ async function main() {
       hardwarePath: config.firebase.hardwarePath,
     }),
   );
+
+  app.use("/api/v1", createActuatorsRouter());
 
   if (config.archive.enabled) {
     console.log(`[Cron] Archive enabled: ${config.archive.schedule} (TZ=${process.env.TZ || "system"})`);
