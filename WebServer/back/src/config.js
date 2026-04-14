@@ -16,6 +16,22 @@ if (fs.existsSync(sharedEnvPath)) {
   dotenv.config();
 }
 
+function normalizeHttpBaseUrl(raw, envName) {
+  const value = String(raw || "").trim();
+  if (!value) return "";
+
+  const withScheme = value.startsWith("http://") || value.startsWith("https://") ? value : `http://${value}`;
+  try {
+    // Validate early: surfaces misconfig in a clear way.
+    // eslint-disable-next-line no-new
+    new URL(withScheme);
+  } catch {
+    throw new Error(`${envName} invalide: ${value}`);
+  }
+
+  return withScheme.replace(/\/+$/, "");
+}
+
 export const config = {
   port: Number(process.env.PORT || "8080"),
 
@@ -47,7 +63,7 @@ export const config = {
   },
 
   raspberry: {
-    controlBaseUrl: (process.env.RASPBERRY_CONTROL_BASE_URL || "").trim().replace(/\/+$/, ""),
+    controlBaseUrl: normalizeHttpBaseUrl(process.env.RASPBERRY_CONTROL_BASE_URL, "RASPBERRY_CONTROL_BASE_URL"),
     controlTimeoutMs: Math.max(500, Number(process.env.RASPBERRY_CONTROL_TIMEOUT_MS || "5000")),
   },
 };

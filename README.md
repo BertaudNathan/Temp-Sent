@@ -5,7 +5,7 @@ Deux firmwares distincts dans le même dépôt :
 
 | Firmware | Rôle |
 |---|---|
-| **Emetteur** (`emitter`) | Lit la température et l'humidité (DHT22), publie via MQTT |
+| **Emetteur** (`emitter`) | Lit la température et l'humidité (DHT11), publie via MQTT |
 | **Récepteur** (`receiver`) | Reçoit des commandes MQTT, pilote un ventilateur en PWM |
 
 La communication passe par un **broker MQTT Mosquitto** hébergé sur un Raspberry Pi.  
@@ -28,7 +28,7 @@ La mise à jour firmware est possible **sans câble USB** (OTA via WiFi).
 ### Emetteur uniquement
 | Composant | Quantité |
 |---|---|
-| Capteur DHT22 (AM2302) — version 3 broches | 1 |
+| Capteur DHT11 (AM2302) — version 3 broches | 1 |
 | Résistance pull-up 10 kΩ | 1 |
 
 ### Récepteur uniquement
@@ -43,10 +43,10 @@ La mise à jour firmware est possible **sans câble USB** (OTA via WiFi).
 
 ## Schémas de câblage
 
-### Emetteur — ESP32 + DHT22 (3 broches) + LED
+### Emetteur — ESP32 + DHT11 (3 broches) + LED
 
 ```
-DHT22 (3 broches)
+DHT11 (3 broches)
 ┌──────────┐
 │ VCC ─────┼──── 3.3V (ESP32)
 │ DATA ────┼──── GPIO 4 (ESP32)  ←── résistance 10kΩ vers 3.3V
@@ -152,7 +152,7 @@ cd Raspberry
 cp .env.example .env
 
 # 2) Renseigner l'URL de ton backend (IP locale ou URL publique) dans .env
-# REST_BASE_URL=http://192.168.1.20:3000
+# REST_BASE_URL=http://192.168.1.20:8080
 
 # 3) Lancer les conteneurs
 docker compose up -d --build
@@ -336,7 +336,7 @@ include/
 lib/
   device/               — Identifiant unique basé sur la MAC
   led/                  — LED de statut
-  sensor/               — Lecture DHT22
+  sensor/               — Lecture DHT11
   wifi_manager/         — Connexion WiFi + reconnexion automatique
   mqtt_manager/         — Client MQTT + reconnexion automatique
   ota_manager/          — Mise à jour OTA

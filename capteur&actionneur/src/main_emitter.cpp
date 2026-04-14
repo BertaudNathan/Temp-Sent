@@ -1,6 +1,6 @@
 // ============================================================
 // main_emitter.cpp — Firmware ESP32 Emetteur
-// Lit DHT22, publie température + humidité via MQTT.
+// Lit DHT11, publie température + humidité via MQTT.
 // Reconnexion WiFi/MQTT automatique + OTA.
 // Flash : pio run -e emitter --target upload
 // ============================================================
@@ -31,7 +31,7 @@ static void _publier_mesure(const SensorData& data) {
         }
     } else {
         // Lecture invalide → publication d'une erreur
-        if (telemetry_serialiser_erreur(1, "Lecture DHT22 echouee", buf, sizeof(buf))) {
+        if (telemetry_serialiser_erreur(1, "Lecture DHT11 echouee", buf, sizeof(buf))) {
             mqtt_publier(device_topic_errors(), buf);
             led_signal_erreur();
         }

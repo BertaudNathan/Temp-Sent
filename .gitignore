@@ -11,3 +11,4 @@ WebServer/front/.env
 WebServer/back/.env
 WebServer/.env
 Raspberry/.env
+Raspberry/docker/mosquitto/data/mosquitto.db

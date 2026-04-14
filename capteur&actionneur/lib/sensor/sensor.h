@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 // ============================================================
-// sensor.h — Interface lecture capteur DHT22
+// sensor.h — Interface lecture capteur DHT11
 // ============================================================
 
 /**
@@ -18,12 +18,12 @@ struct SensorData {
 };
 
 /**
- * @brief Initialise le capteur DHT22 (appeler une fois dans setup).
+ * @brief Initialise le capteur DHT11 (appeler une fois dans setup).
  */
 void sensor_init();
 
 /**
- * @brief Lit la température et l'humidité depuis le DHT22.
+ * @brief Lit la température et l'humidité depuis le DHT11.
  * @return SensorData — valid=false si la mesure est invalide.
  */
 SensorData sensor_lire();

@@ -2,10 +2,21 @@ import express from "express";
 import { config } from "../config.js";
 
 function buildUrl(baseUrl, path) {
-  const base = String(baseUrl || "").trim().replace(/\/+$/, "");
-  if (!base) {
+  const baseRaw = String(baseUrl || "").trim();
+  if (!baseRaw) {
     throw new Error("RASPBERRY_CONTROL_BASE_URL manquant");
   }
+
+  const baseWithScheme =
+    baseRaw.startsWith("http://") || baseRaw.startsWith("https://") ? baseRaw : `http://${baseRaw}`;
+  const base = baseWithScheme.replace(/\/+$/, "");
+  try {
+    // eslint-disable-next-line no-new
+    new URL(base);
+  } catch {
+    throw new Error(`RASPBERRY_CONTROL_BASE_URL invalide: ${baseRaw}`);
+  }
+
   const p = path.startsWith("/") ? path : `/${path}`;
   return `${base}${p}`;
 }

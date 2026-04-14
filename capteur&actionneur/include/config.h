@@ -11,9 +11,9 @@
 #define MQTT_PASS              ""           // Laisser vide si non requis
 #define MQTT_KEEPALIVE_S       60           // Keep-alive MQTT en secondes
 
-// Capteur DHT22
-#define PIN_DHT                4       // GPIO connecté au DATA du DHT22
-#define DHT_TYPE               DHT22
+// Capteur DHT11
+#define PIN_DHT                4       // GPIO connecté au DATA du DHT11
+#define DHT_TYPE               DHT11
 
 // LED de statut
 #define PIN_LED                15       // GPIO LED embarquée (active HIGH)
