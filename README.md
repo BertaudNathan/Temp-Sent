@@ -400,6 +400,12 @@ cp .env.example .env
 modifier les variables suivantes dans `.env` :
 - `RASPBERRY_CONTROL_BASE_URL` : URL du Raspberry Pi (nécessite un port forwarding si le Pi n'est pas sur le même réseau local)
 
+créer le fichier de clé firebase  `key.json` 
+```bash
+cp key.json.example key.json
+```
+copier dedans le contenu du fichier partagé dans le dossier technique, partie "Lien utiles" (partagé par mail à clement.fleury31@ynov.com).
+
 ## Lancement
 Lancement du serveur Express, de la base de données MariaDB et du front vite:
 
