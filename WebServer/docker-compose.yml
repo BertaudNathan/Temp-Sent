@@ -44,13 +44,7 @@ services:
       MARIADB_USER: ${MARIADB_USER:-tempsent}
       MARIADB_PASSWORD: ${MARIADB_PASSWORD:-tempsent}
 
-      # Archive job
-      ARCHIVE_CRON_ENABLED: ${ARCHIVE_CRON_ENABLED:-true}
-      ARCHIVE_CRON_SCHEDULE: ${ARCHIVE_CRON_SCHEDULE:-"5 0 * * *"}
-      ARCHIVE_OLDER_THAN_HOURS: ${ARCHIVE_OLDER_THAN_HOURS:-24}
-      ARCHIVE_PAGE_SIZE: ${ARCHIVE_PAGE_SIZE:-500}
-      ARCHIVE_DELETE_CHUNK_SIZE: ${ARCHIVE_DELETE_CHUNK_SIZE:-500}
-      TZ: ${TZ:-Europe/Paris}
+      
 
       # Actions forwarding (API -> Raspberry control server)
       RASPBERRY_CONTROL_BASE_URL: ${RASPBERRY_CONTROL_BASE_URL:-}

@@ -3,8 +3,9 @@
 #include <stdint.h>
 
 // ============================================================
-// actuator.h — Interface pilotage moteur DC 2 fils (LEDC ESP32)
-// Récepteur uniquement. Gère le mode arrêt d'urgence.
+// actuator.h — Interface pilotage moteur DC (PWM)
+// Récepteur uniquement. Contrôle uniquement la vitesse (0–100%).
+// Gère le mode arrêt d'urgence.
 // ============================================================
 
 /**
@@ -17,8 +18,8 @@ struct ActuatorState {
 };
 
 /**
- * @brief Initialise le canal LEDC PWM du moteur.
- * Configure le canal, la fréquence et la résolution (config.h).
+ * @brief Initialise la sortie PWM du moteur.
+ * Utilise un `analogWrite()` classique sur la broche définie dans config.h.
  */
 void actuator_init();
 

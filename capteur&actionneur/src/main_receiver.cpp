@@ -1,6 +1,6 @@
 // ============================================================
 // main_receiver.cpp — Firmware ESP32 Récepteur
-// Reçoit commandes MQTT, pilote moteur DC 2 fils en PWM.
+// Reçoit commandes MQTT, pilote moteur DC 2 fils (tout-ou-rien, SANS PWM).
 // Gère arrêt d'urgence et reset. Reconnexion auto + OTA.
 // Flash : pio run -e receiver --target upload
 // ============================================================
@@ -20,6 +20,7 @@
 // État de la régulation autonome par seuil
 // -----------------------------------------------------------
 static bool s_moteur_actif = false;  // true = moteur enclenché par dépassement de seuil
+static bool s_forcage_off = false;   // true = arrêt manuel prioritaire (ignore la régulation auto)
 
 // -----------------------------------------------------------
 // Traite la commande "set_motor" — règle vitesse + publie statut
@@ -48,6 +49,11 @@ static void _traiter_set_motor(uint8_t valeur) {
 //                     OFF si temp ET humi < seuil × (1 - hysteresis)
 // -----------------------------------------------------------
 static void _evaluer_seuils(float temp, float humi) {
+    if (s_forcage_off) {
+        // Un OFF manuel garde la priorité tant qu'un ON/RESET n'est pas reçu.
+        return;
+    }
+
     const float temp_on  = TEMP_THRESHOLD_C;
     const float temp_off = TEMP_THRESHOLD_C * (1.0f - ALERT_HYSTERESIS_PCT / 100.0f);
     const float humi_on  = HUMIDITY_THRESHOLD_PCT;
@@ -74,6 +80,8 @@ static void _evaluer_seuils(float temp, float humi) {
 // -----------------------------------------------------------
 // Callback MQTT — traite les messages reçus sur le topic command
 // {"action":"set_motor","value":75}
+// {"action":"off"}
+// {"action":"on","value":75}
 // {"action":"emergency_stop"}
 // {"action":"reset"}
 // Traite aussi les télémétries capteurs pour la régulation
@@ -107,15 +115,36 @@ static void _mqtt_callback(char* topic, byte* payload, unsigned int length) {
     char buf[JSON_BUFFER_SIZE];
 
     if (strcmp(action, "set_motor") == 0) {
-        _traiter_set_motor((uint8_t)(doc["value"] | 0));
+        uint8_t valeur = (uint8_t)(doc["value"] | 0);
+        s_forcage_off = (valeur == 0);
+        s_moteur_actif = (valeur > 0);
+        _traiter_set_motor(valeur);
+
+    } else if (strcmp(action, "off") == 0) {
+        s_forcage_off = true;
+        s_moteur_actif = false;
+        _traiter_set_motor(0);
+        telemetry_serialiser_statut(0, "MANUAL_OFF", buf, sizeof(buf));
+        mqtt_publier(device_topic_status(), buf);
+
+    } else if (strcmp(action, "on") == 0) {
+        uint8_t valeur = (uint8_t)(doc["value"] | MOTOR_SPEED_ALERT_PCT);
+        s_forcage_off = false;
+        s_moteur_actif = (valeur > 0);
+        _traiter_set_motor(valeur);
+        telemetry_serialiser_statut(valeur, "MANUAL_ON", buf, sizeof(buf));
+        mqtt_publier(device_topic_status(), buf);
 
     } else if (strcmp(action, "emergency_stop") == 0) {
         s_moteur_actif = false;  // la régulation ne forcera pas une remise en route
+        s_forcage_off = true;    // arrêt prioritaire jusqu'à reset/on
         actuator_emergency_stop();
         telemetry_serialiser_statut(0, "EMERGENCY_STOP", buf, sizeof(buf));
         mqtt_publier(device_topic_status(), buf);
 
     } else if (strcmp(action, "reset") == 0) {
+        s_forcage_off = false;
+        s_moteur_actif = false;
         actuator_reset();
         telemetry_serialiser_statut(0, "RESET", buf, sizeof(buf));
         mqtt_publier(device_topic_status(), buf);

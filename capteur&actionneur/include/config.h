@@ -1,11 +1,11 @@
 #pragma once
 // Réseau WiFi
 #define WIFI_SSID              "motorola edge 60_1041"
-#define WIFI_PASS              "ftgstpftg"
+#define WIFI_PASS              "mdpmdpmdp"
 #define WIFI_CONNECT_TIMEOUT_MS 15000   // Délai max de connexion initiale (ms)
 
 // Broker MQTT (Raspberry Pi Mosquitto)
-#define MQTT_HOST              "10.208.33.124"
+#define MQTT_HOST              "10.202.227.124"
 #define MQTT_PORT              1883
 #define MQTT_USER              ""           // Laisser vide si non requis
 #define MQTT_PASS              ""           // Laisser vide si non requis
@@ -19,7 +19,8 @@
 #define PIN_LED                15       // GPIO LED embarquée (active HIGH)
 
 // Moteur DC 2 fils (récepteur uniquement)
-#define PIN_MOTOR_PWM          18      // GPIO signal PWM moteur (via transistor)
+// Note: dans ce projet, le moteur est piloté en tout-ou-rien (SANS PWM).
+#define PIN_MOTOR_PWM          18      // GPIO commande moteur (via transistor)
 #define PWM_CHANNEL            0       // Canal LEDC (0–15)
 #define PWM_FREQ_HZ            1000    // Fréquence PWM (Hz) — 1 kHz adapté transistor NPN + moteur DC
 #define PWM_RESOLUTION_BITS    8       // Résolution : 0–255
