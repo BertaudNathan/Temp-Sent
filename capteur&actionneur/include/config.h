@@ -28,7 +28,7 @@
 // Seuils de régulation thermique automatique (récepteur)
 // Le moteur s'enclenche si temp >= TEMP_THRESHOLD_C OU humi >= HUMIDITY_THRESHOLD_PCT.
 // Il s'arrête uniquement quand temp ET humi repassent sous leur seuil réduit de ALERT_HYSTERESIS_PCT %.
-#define TEMP_THRESHOLD_C        26.0f  // Seuil température déclenchant le moteur (°C)
+#define TEMP_THRESHOLD_C        13.0f  // Seuil température déclenchant le moteur (°C)
 #define HUMIDITY_THRESHOLD_PCT  70.0f  // Seuil humidité déclenchant le moteur (%)
 #define MOTOR_SPEED_ALERT_PCT   75     // Vitesse moteur en mode alerte (0–100 %)
 #define ALERT_HYSTERESIS_PCT    15     // Hystérésis de coupure : OFF si 15 % sous le seuil

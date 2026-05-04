@@ -360,3 +360,49 @@ platformio.ini          — Configuration PlatformIO (deux environnements)
 | OTA refusé | Vérifier que `OTA_PASSWORD` correspond entre `config.h` et la commande upload |
 | Ventilateur ne répond pas | Vérifier le câblage transistor/MOSFET + alimentation 12 V séparée |
 | `FAILED` à la compilation | S'assurer que PlatformIO a téléchargé les bibliothèques (`pio lib install`) |
+# Passerelle Raspberry Pi
+
+## Prerequis
+
+- Docker et Docker Compose installés sur le Raspberry Pi
+- Le Raspberry Pi doit être connecté au même réseau WiFi que les ESP32
+
+## Configuration
+
+copier le fichier d'exemple `.env.example` en `.env` et renseigner les valeurs nécessaires :
+
+```bash
+cp .env.example .env
+```
+modifier les variables suivantes dans `.env` :
+- `REST_BASE_URL` : URL de votre backend Express
+
+
+## Lancement
+Lancement du serveur MQTT et du bridge REST :
+
+```bash
+docker compose up -d --build
+```
+# Serveur API , base de données froides et dashboard
+
+## Prerequis
+- Docker et Docker Compose installés sur la machine hébergeant le backend
+- Le backend doit être accessible depuis le réseau local, ou déployé sur une URL publique
+
+## Configuration
+copier le fichier d'exemple `.env.example` en `.env` et renseigner les valeurs nécessaires :
+
+```bash
+cp .env.example .env
+```
+
+modifier les variables suivantes dans `.env` :
+- `RASPBERRY_CONTROL_BASE_URL` : URL du Raspberry Pi (nécessite un port forwarding si le Pi n'est pas sur le même réseau local)
+
+## Lancement
+Lancement du serveur Express, de la base de données MariaDB et du front vite:
+
+```bash
+docker compose up -d --build
+```
